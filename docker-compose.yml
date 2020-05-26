@@ -1,0 +1,42 @@
+version: '3.5'
+
+services: 
+
+  database-mongodb:
+    container_name: mongo
+    image: mongo:latest
+    volumes:
+      - ./database-mongodb:/data/db
+    ports:
+      - 2717:27017
+    restart: always
+    # healthcheck:
+    #   test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet 1
+    #   interval: 10s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 40s
+    
+  go-chi-server:
+    build: ./go-chi-server
+    volumes :
+      - ./go-chi-server/files:/files
+    ports:
+      - 5001:8080
+    restart: always
+    depends_on: 
+      - database-mongodb
+  
+  web-server-nginx:
+    container_name: web-server-nginx
+    image: nginx:latest
+    ports:
+      - 8081:80
+    volumes:
+      - ./web-server-nginx:/usr/share/nginx/html
+    depends_on:
+      - go-chi-server
+
+  
+    
+    
